@@ -1,6 +1,12 @@
 import { config } from '../lib/config';
 import { supabase } from '../lib/supabase';
 
+const baseUrl = import.meta.env.VITE_API_BASE_URL || 
+                (typeof window !== 'undefined' && 
+                 window.location.hostname === 'localhost' 
+                 ? 'http://localhost:4000/api' 
+                 : '/api');
+
 type RequestOptions = Omit<RequestInit, 'headers'> & {
   headers?: Record<string, string>;
 };
@@ -12,7 +18,7 @@ export async function apiRequest<T>(
   const session = supabase ? await supabase.auth.getSession() : null;
   const accessToken = session?.data?.session?.access_token;
 
-  const response = await fetch(`${config.apiBaseUrl}${path}`, {
+  const response = await fetch(`${baseUrl}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

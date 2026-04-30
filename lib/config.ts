@@ -6,7 +6,7 @@ const getEnv = (key: string): string => {
 export const config = {
   supabaseUrl: getEnv('VITE_SUPABASE_URL'),
   supabaseAnonKey: getEnv('VITE_SUPABASE_ANON_KEY'),
-  apiBaseUrl: getEnv('VITE_API_BASE_URL') || '/api',
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '/api',
 };
 
 export const isSupabaseConfigured =
