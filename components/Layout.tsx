@@ -192,7 +192,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors text-[20px]">search</span>
               <input 
                 className="h-10 w-64 rounded-full bg-background-light dark:bg-background-dark border-none pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 placeholder:text-text-muted/70 text-text-main dark:text-white" 
-                placeholder="Search transcripts..." 
+                placeholder="Search Meetings..." 
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
