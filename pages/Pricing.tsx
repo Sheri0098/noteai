@@ -67,14 +67,21 @@ const Pricing: React.FC = () => {
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-[1200px] w-full mb-24">
          {/* Free */}
-         <div className="flex flex-col rounded-3xl border border-border-light dark:border-white/10 bg-white dark:bg-surface-dark p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+         <div className={`flex flex-col rounded-3xl bg-white dark:bg-surface-dark p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all ${
+           currentUserPlan === 'Free' || currentUserPlan === 'Starter'
+             ? 'ring-2 ring-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/20'
+             : 'border border-border-light dark:border-white/10'
+         }`}>
             <div className="mb-8">
                <div className="flex items-center gap-2 mb-2">
                  <h3 className="text-2xl font-bold text-text-main dark:text-white">Starter</h3>
-                 {(currentUserPlan === 'Free' || currentUserPlan === 'Starter') && (
-                   <span className="text-xs bg-primary/10 text-primary font-semibold px-2 py-1 rounded-full">Current Plan</span>
-                 )}
                </div>
+               {(currentUserPlan === 'Free' || currentUserPlan === 'Starter') && (
+                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary text-white">
+                   <span className="material-symbols-outlined text-[12px] fill">check_circle</span>
+                   Current Plan
+                 </span>
+               )}
                <p className="text-sm text-text-muted">For individuals just getting started.</p>
                <div className="flex items-baseline gap-1 mt-6">
                   <span className="text-5xl font-black text-text-main dark:text-white">$0</span>
@@ -95,15 +102,22 @@ const Pricing: React.FC = () => {
          </div>
 
          {/* Pro */}
-         <div className="relative flex flex-col rounded-3xl border-2 border-primary bg-white dark:bg-surface-dark p-8 shadow-2xl shadow-primary/20 transform md:scale-105 z-10">
+         <div className={`relative flex flex-col rounded-3xl bg-white dark:bg-surface-dark p-8 shadow-2xl shadow-primary/20 transform md:scale-105 z-10 ${
+           currentUserPlan === 'Pro'
+             ? 'ring-2 ring-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/20'
+             : 'border-2 border-primary'
+         }`}>
             <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-blue-500 text-white text-sm font-bold px-6 py-2 rounded-full uppercase tracking-wider shadow-md">Most Popular</div>
             <div className="mb-8">
                <div className="flex items-center gap-2 mb-2">
                  <h3 className="text-2xl font-bold text-text-main dark:text-white">Pro</h3>
-                 {currentUserPlan === 'Pro' && (
-                   <span className="text-xs bg-primary/10 text-primary font-semibold px-2 py-1 rounded-full">Current Plan</span>
-                 )}
                </div>
+               {currentUserPlan === 'Pro' && (
+                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary text-white">
+                   <span className="material-symbols-outlined text-[12px] fill">check_circle</span>
+                   Current Plan
+                 </span>
+               )}
                <p className="text-sm text-text-muted">For professionals and small teams.</p>
                <div className="flex items-baseline gap-1 mt-6">
                   <span className="text-5xl font-black text-text-main dark:text-white">${isYearly ? '12' : '15'}</span>
@@ -111,9 +125,15 @@ const Pricing: React.FC = () => {
                </div>
                {isYearly && <p className="text-xs text-green-500 font-bold mt-2">Billed $144 yearly</p>}
             </div>
-            <button className="w-full h-12 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold transition-colors shadow-lg mb-8" onClick={() => { if (!user) { navigate('/signup'); return; } navigate('/checkout', { state: { planName: 'Pro', price: isYearly ? '$12' : '$15', billingCycle: isYearly ? 'yearly' : 'monthly' } }); }}>
-               Subscribe to Pro
-            </button>
+            {currentUserPlan === 'Pro' ? (
+              <button disabled className="w-full h-12 rounded-xl font-semibold bg-primary/10 text-primary border border-primary/30 cursor-not-allowed mb-8">
+                Current Plan
+              </button>
+            ) : (
+              <button className="w-full h-12 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold transition-colors shadow-lg mb-8" onClick={() => { if (!user) { navigate('/signup'); return; } navigate('/checkout', { state: { planName: 'Pro', price: isYearly ? '$12' : '$15', billingCycle: isYearly ? 'yearly' : 'monthly' } }); }}>
+                Subscribe to Pro
+              </button>
+            )}
             <div className="flex flex-col gap-4 text-sm text-text-main dark:text-white/80">
                {['Unlimited transcription minutes', 'Advanced Gemini 2.0 Summaries', 'Unlimited history', 'Speaker Identification', 'Calendar & Slack Integrations', 'Search across all meetings'].map((feat, i) => (
                   <div key={i} className="flex gap-3 items-start">
@@ -125,14 +145,21 @@ const Pricing: React.FC = () => {
          </div>
 
          {/* Business */}
-         <div className="flex flex-col rounded-3xl border border-border-light dark:border-white/10 bg-white dark:bg-surface-dark p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+         <div className={`flex flex-col rounded-3xl bg-white dark:bg-surface-dark p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all ${
+           currentUserPlan === 'Business'
+             ? 'ring-2 ring-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/20'
+             : 'border border-border-light dark:border-white/10'
+         }`}>
             <div className="mb-8">
                <div className="flex items-center gap-2 mb-2">
                  <h3 className="text-2xl font-bold text-text-main dark:text-white">Business</h3>
-                 {currentUserPlan === 'Business' && (
-                   <span className="text-xs bg-primary/10 text-primary font-semibold px-2 py-1 rounded-full">Current Plan</span>
-                 )}
                </div>
+               {currentUserPlan === 'Business' && (
+                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary text-white">
+                   <span className="material-symbols-outlined text-[12px] fill">check_circle</span>
+                   Current Plan
+                 </span>
+               )}
                <p className="text-sm text-text-muted">For growing organizations.</p>
                <div className="flex items-baseline gap-1 mt-6">
                   <span className="text-5xl font-black text-text-main dark:text-white">${isYearly ? '49' : '59'}</span>
@@ -140,9 +167,15 @@ const Pricing: React.FC = () => {
                </div>
                {isYearly && <p className="text-xs text-green-500 font-bold mt-2">Billed $588 yearly</p>}
             </div>
-            <button className="w-full h-12 rounded-xl border-2 border-border-light dark:border-white/10 hover:border-primary hover:text-primary text-text-main dark:text-white font-bold transition-colors mb-8" onClick={() => { if (!user) { navigate('/signup'); return; } navigate('/checkout', { state: { planName: 'Business', price: isYearly ? '$49' : '$59', billingCycle: isYearly ? 'yearly' : 'monthly' } }); }}>
-               Subscribe to Business
-            </button>
+            {currentUserPlan === 'Business' ? (
+              <button disabled className="w-full h-12 rounded-xl font-semibold bg-primary/10 text-primary border border-primary/30 cursor-not-allowed mb-8">
+                Current Plan
+              </button>
+            ) : (
+              <button className="w-full h-12 rounded-xl border-2 border-border-light dark:border-white/10 hover:border-primary hover:text-primary text-text-main dark:text-white font-bold transition-colors mb-8" onClick={() => { if (!user) { navigate('/signup'); return; } navigate('/checkout', { state: { planName: 'Business', price: isYearly ? '$49' : '$59', billingCycle: isYearly ? 'yearly' : 'monthly' } }); }}>
+                Subscribe to Business
+              </button>
+            )}
             <div className="flex flex-col gap-4 text-sm text-text-main dark:text-white/80">
                {['Everything in Pro', 'Admin Dashboard', 'SSO (Okta, Google, SAML)', 'Audit Logs', 'Custom Data Retention', 'Priority 24/7 Support', 'Dedicated Success Manager'].map((feat, i) => (
                   <div key={i} className="flex gap-3 items-start">
