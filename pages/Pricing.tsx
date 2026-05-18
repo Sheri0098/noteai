@@ -19,6 +19,13 @@ const Pricing: React.FC = () => {
     }
   }, [user]);
 
+  const isCurrentPlan = (planName: string): boolean => {
+    if (planName === 'Starter') {
+      return currentUserPlan === 'Free' || currentUserPlan === 'Starter';
+    }
+    return currentUserPlan === planName;
+  };
+
   return (
     <div className="flex flex-col items-center py-20 px-6 overflow-x-hidden">
       {fromDashboard && (
@@ -66,31 +73,41 @@ const Pricing: React.FC = () => {
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-[1200px] w-full mb-24">
-         {/* Free */}
-         <div className={`flex flex-col rounded-3xl bg-white dark:bg-surface-dark p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all ${
-           currentUserPlan === 'Free' || currentUserPlan === 'Starter'
-             ? 'ring-2 ring-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/20'
-             : 'border border-border-light dark:border-white/10'
-         }`}>
+         {/* Starter */}
+         <div className={`
+           relative rounded-2xl p-8 transition-all duration-300 flex flex-col
+           ${isCurrentPlan('Starter')
+             ? 'border-2 border-primary shadow-xl shadow-primary/20 bg-primary/5 dark:bg-primary/10 scale-[1.02]'
+             : 'border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark shadow-sm'
+           }
+         `}>
+            {isCurrentPlan('Starter') && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                <span className="material-symbols-outlined text-[13px] fill">check_circle</span>
+                Current Plan
+              </div>
+            )}
             <div className="mb-8">
-               <div className="flex items-center gap-2 mb-2">
-                 <h3 className="text-2xl font-bold text-text-main dark:text-white">Starter</h3>
-               </div>
-               {(currentUserPlan === 'Free' || currentUserPlan === 'Starter') && (
-                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary text-white">
-                   <span className="material-symbols-outlined text-[12px] fill">check_circle</span>
-                   Current Plan
-                 </span>
-               )}
+               <h3 className="text-2xl font-bold text-text-main dark:text-white mb-2">Starter</h3>
                <p className="text-sm text-text-muted">For individuals just getting started.</p>
                <div className="flex items-baseline gap-1 mt-6">
                   <span className="text-5xl font-black text-text-main dark:text-white">$0</span>
                   <span className="text-text-muted font-medium">/ forever</span>
                </div>
             </div>
-            <button className="w-full h-12 rounded-xl border-2 border-border-light dark:border-white/10 hover:border-primary hover:text-primary text-text-main dark:text-white font-bold transition-colors mb-8" onClick={() => { if (user) { navigate('/dashboard'); } else { navigate('/signup'); } }}>
-               Get Started
-            </button>
+            {isCurrentPlan('Starter') ? (
+              <button 
+                disabled
+                className="w-full py-3.5 rounded-xl font-semibold text-sm bg-primary/10 text-primary border border-primary/30 cursor-not-allowed flex items-center justify-center gap-2 mb-8"
+              >
+                <span className="material-symbols-outlined text-[16px] fill">check_circle</span>
+                Active Plan
+              </button>
+            ) : (
+              <button className="w-full py-3.5 rounded-xl border-2 border-border-light dark:border-white/10 hover:border-primary hover:text-primary text-text-main dark:text-white font-bold transition-colors mb-8" onClick={() => { if (user) { navigate('/dashboard'); } else { navigate('/signup'); } }}>
+                Get Started
+              </button>
+            )}
             <div className="flex flex-col gap-4 text-sm text-text-main dark:text-white/80">
                {['300 transcription minutes/mo', 'Basic AI summaries', '7-day recording history', '1 user seat', 'Email support'].map((feat, i) => (
                   <div key={i} className="flex gap-3 items-start">
@@ -102,22 +119,23 @@ const Pricing: React.FC = () => {
          </div>
 
          {/* Pro */}
-         <div className={`relative flex flex-col rounded-3xl bg-white dark:bg-surface-dark p-8 shadow-2xl shadow-primary/20 transform md:scale-105 z-10 ${
-           currentUserPlan === 'Pro'
-             ? 'ring-2 ring-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/20'
-             : 'border-2 border-primary'
-         }`}>
-            <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-blue-500 text-white text-sm font-bold px-6 py-2 rounded-full uppercase tracking-wider shadow-md">Most Popular</div>
+         <div className={`
+           relative rounded-2xl p-8 transition-all duration-300 flex flex-col transform md:scale-105 z-10
+           ${isCurrentPlan('Pro')
+             ? 'border-2 border-primary shadow-xl shadow-primary/25 bg-primary/5 dark:bg-primary/10 scale-[1.02]'
+             : 'border-2 border-primary shadow-lg'
+           }
+         `}>
+            {isCurrentPlan('Pro') ? (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                <span className="material-symbols-outlined text-[13px] fill">check_circle</span>
+                Current Plan
+              </div>
+            ) : (
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-blue-500 text-white text-sm font-bold px-6 py-2 rounded-full uppercase tracking-wider shadow-md">Most Popular</div>
+            )}
             <div className="mb-8">
-               <div className="flex items-center gap-2 mb-2">
-                 <h3 className="text-2xl font-bold text-text-main dark:text-white">Pro</h3>
-               </div>
-               {currentUserPlan === 'Pro' && (
-                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary text-white">
-                   <span className="material-symbols-outlined text-[12px] fill">check_circle</span>
-                   Current Plan
-                 </span>
-               )}
+               <h3 className="text-2xl font-bold text-text-main dark:text-white mb-2">Pro</h3>
                <p className="text-sm text-text-muted">For professionals and small teams.</p>
                <div className="flex items-baseline gap-1 mt-6">
                   <span className="text-5xl font-black text-text-main dark:text-white">${isYearly ? '12' : '15'}</span>
@@ -125,12 +143,16 @@ const Pricing: React.FC = () => {
                </div>
                {isYearly && <p className="text-xs text-green-500 font-bold mt-2">Billed $144 yearly</p>}
             </div>
-            {currentUserPlan === 'Pro' ? (
-              <button disabled className="w-full h-12 rounded-xl font-semibold bg-primary/10 text-primary border border-primary/30 cursor-not-allowed mb-8">
-                Current Plan
+            {isCurrentPlan('Pro') ? (
+              <button 
+                disabled
+                className="w-full py-3.5 rounded-xl font-semibold text-sm bg-primary/10 text-primary border border-primary/30 cursor-not-allowed flex items-center justify-center gap-2 mb-8"
+              >
+                <span className="material-symbols-outlined text-[16px] fill">check_circle</span>
+                Active Plan
               </button>
             ) : (
-              <button className="w-full h-12 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold transition-colors shadow-lg mb-8" onClick={() => { if (!user) { navigate('/signup'); return; } navigate('/checkout', { state: { planName: 'Pro', price: isYearly ? '$12' : '$15', billingCycle: isYearly ? 'yearly' : 'monthly' } }); }}>
+              <button className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold transition-colors shadow-lg mb-8" onClick={() => { if (!user) { navigate('/signup'); return; } navigate('/checkout', { state: { planName: 'Pro', price: isYearly ? '$12' : '$15', billingCycle: isYearly ? 'yearly' : 'monthly' } }); }}>
                 Subscribe to Pro
               </button>
             )}
@@ -145,21 +167,21 @@ const Pricing: React.FC = () => {
          </div>
 
          {/* Business */}
-         <div className={`flex flex-col rounded-3xl bg-white dark:bg-surface-dark p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all ${
-           currentUserPlan === 'Business'
-             ? 'ring-2 ring-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/20'
-             : 'border border-border-light dark:border-white/10'
-         }`}>
+         <div className={`
+           relative rounded-2xl p-8 transition-all duration-300 flex flex-col
+           ${isCurrentPlan('Business')
+             ? 'border-2 border-primary shadow-xl shadow-primary/20 bg-primary/5 dark:bg-primary/10 scale-[1.02]'
+             : 'border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark shadow-sm'
+           }
+         `}>
+            {isCurrentPlan('Business') && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                <span className="material-symbols-outlined text-[13px] fill">check_circle</span>
+                Current Plan
+              </div>
+            )}
             <div className="mb-8">
-               <div className="flex items-center gap-2 mb-2">
-                 <h3 className="text-2xl font-bold text-text-main dark:text-white">Business</h3>
-               </div>
-               {currentUserPlan === 'Business' && (
-                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary text-white">
-                   <span className="material-symbols-outlined text-[12px] fill">check_circle</span>
-                   Current Plan
-                 </span>
-               )}
+               <h3 className="text-2xl font-bold text-text-main dark:text-white mb-2">Business</h3>
                <p className="text-sm text-text-muted">For growing organizations.</p>
                <div className="flex items-baseline gap-1 mt-6">
                   <span className="text-5xl font-black text-text-main dark:text-white">${isYearly ? '49' : '59'}</span>
@@ -167,12 +189,16 @@ const Pricing: React.FC = () => {
                </div>
                {isYearly && <p className="text-xs text-green-500 font-bold mt-2">Billed $588 yearly</p>}
             </div>
-            {currentUserPlan === 'Business' ? (
-              <button disabled className="w-full h-12 rounded-xl font-semibold bg-primary/10 text-primary border border-primary/30 cursor-not-allowed mb-8">
-                Current Plan
+            {isCurrentPlan('Business') ? (
+              <button 
+                disabled
+                className="w-full py-3.5 rounded-xl font-semibold text-sm bg-primary/10 text-primary border border-primary/30 cursor-not-allowed flex items-center justify-center gap-2 mb-8"
+              >
+                <span className="material-symbols-outlined text-[16px] fill">check_circle</span>
+                Active Plan
               </button>
             ) : (
-              <button className="w-full h-12 rounded-xl border-2 border-border-light dark:border-white/10 hover:border-primary hover:text-primary text-text-main dark:text-white font-bold transition-colors mb-8" onClick={() => { if (!user) { navigate('/signup'); return; } navigate('/checkout', { state: { planName: 'Business', price: isYearly ? '$49' : '$59', billingCycle: isYearly ? 'yearly' : 'monthly' } }); }}>
+              <button className="w-full py-3.5 rounded-xl border-2 border-border-light dark:border-white/10 hover:border-primary hover:text-primary text-text-main dark:text-white font-bold transition-colors mb-8" onClick={() => { if (!user) { navigate('/signup'); return; } navigate('/checkout', { state: { planName: 'Business', price: isYearly ? '$49' : '$59', billingCycle: isYearly ? 'yearly' : 'monthly' } }); }}>
                 Subscribe to Business
               </button>
             )}
