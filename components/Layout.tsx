@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCurrentUserProfile } from '../hooks/useCurrentUserProfile';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { meetingService } from '../services/meetingService';
+import { Meeting } from '../types';
 
 const isAvatarImageUrl = (value: string) => /^https?:\/\//i.test(value);
 
@@ -27,6 +28,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const currentUser = useCurrentUserProfile();
   const { isDark, toggle } = useDarkMode();
   const [plan, setPlan] = useState<string>('Free');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
 
   const isActive = (path: string) => location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path));
 
@@ -35,6 +39,24 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       .getUsageSummary()
       .then((usage) => setPlan(usage.plan))
       .catch(() => setPlan('Free'));
+  }, []);
+
+  useEffect(() => {
+    meetingService
+      .listMeetings()
+      .then((data) => setMeetings(data))
+      .catch(() => setMeetings([]));
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.notification-bell')) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   return (
@@ -130,12 +152,107 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="flex items-center gap-4">
             <div className="relative hidden md:block group">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors text-[20px]">search</span>
-              <input className="h-10 w-64 rounded-full bg-background-light dark:bg-background-dark border-none pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 placeholder:text-text-muted/70 text-text-main dark:text-white" placeholder="Search transcripts..." type="text"/>
+              <input 
+                className="h-10 w-64 rounded-full bg-background-light dark:bg-background-dark border-none pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 placeholder:text-text-muted/70 text-text-main dark:text-white" 
+                placeholder="Search transcripts..." 
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && searchQuery.trim()) {
+                    navigate(`/meetings?search=${encodeURIComponent(searchQuery.trim())}`);
+                    setSearchQuery('');
+                  }
+                }}
+              />
             </div>
-            <button className="relative size-10 flex items-center justify-center rounded-full hover:bg-background-light dark:hover:bg-background-dark text-text-muted hover:text-primary transition-colors">
-              <span className="material-symbols-outlined">notifications</span>
-              <span className="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border-2 border-surface-light dark:border-surface-dark"></span>
-            </button>
+            <div className="notification-bell relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative size-10 flex items-center justify-center rounded-full hover:bg-background-light dark:hover:bg-background-dark text-text-muted hover:text-primary transition-colors"
+              >
+                <span className="material-symbols-outlined">notifications</span>
+                <span className="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border-2 border-surface-light dark:border-surface-dark"></span>
+              </button>
+              
+              {showNotifications && (
+                <div className="absolute right-0 top-12 w-80 bg-surface-light dark:bg-surface-dark rounded-2xl shadow-xl border border-border-light dark:border-border-dark z-50 overflow-hidden">
+                  
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border-light dark:border-border-dark">
+                    <span className="font-semibold text-sm text-text-main dark:text-white">
+                      Notifications
+                    </span>
+                    <button 
+                      onClick={() => setShowNotifications(false)}
+                      className="text-text-muted hover:text-primary text-xs transition-colors"
+                    >
+                      Mark all read
+                    </button>
+                  </div>
+
+                  <div className="divide-y divide-border-light dark:divide-border-dark">
+                    
+                    {meetings.length === 0 ? (
+                      <div className="px-4 py-8 text-center">
+                        <span className="material-symbols-outlined text-3xl text-text-muted mb-2 block">
+                          notifications_none
+                        </span>
+                        <p className="text-sm text-text-muted">
+                          No notifications yet
+                        </p>
+                      </div>
+                    ) : (
+                      meetings.slice(0, 5).map((meeting) => (
+                        <div 
+                          key={meeting.id}
+                          onClick={() => {
+                            navigate(`/meetings/${meeting.id}`);
+                            setShowNotifications(false);
+                          }}
+                          className="flex items-start gap-3 px-4 py-3 hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="material-symbols-outlined text-primary text-[16px]">mic</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-text-main dark:text-white truncate">
+                              {meeting.title || 'Untitled Meeting'}
+                            </p>
+                            <p className="text-xs text-text-muted mt-0.5">
+                              {meeting.status === 'Done' 
+                                ? 'Meeting processed successfully' 
+                                : 'Meeting is being processed'}
+                            </p>
+                            <p className="text-xs text-text-muted mt-0.5">
+                              {meeting.date}
+                            </p>
+                          </div>
+                          <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-2 ${
+                            meeting.status === 'Done' 
+                              ? 'bg-green-400' 
+                              : 'bg-primary'
+                          }`} />
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {meetings.length > 0 && (
+                    <div className="px-4 py-3 border-t border-border-light dark:border-border-dark">
+                      <button
+                        onClick={() => {
+                          navigate('/meetings');
+                          setShowNotifications(false);
+                        }}
+                        className="text-sm text-primary hover:text-primary-dark font-medium transition-colors w-full text-center"
+                      >
+                        View all meetings →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <button
               type="button"
               onClick={toggle}

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { meetingService } from '../services/meetingService';
 import { Meeting } from '../types';
 
@@ -47,6 +47,7 @@ const isWithinRange = (dateStr: string, range: DateRangeFilter): boolean => {
 const AllMeetings: React.FC = () => {
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [searchParams] = useSearchParams();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -80,6 +81,13 @@ const AllMeetings: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const searchFromUrl = searchParams.get('search');
+    if (searchFromUrl) {
+      setSearchTerm(searchFromUrl);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     let mounted = true;
