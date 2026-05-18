@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCurrentUserProfile } from '../hooks/useCurrentUserProfile';
 import { useDarkMode } from '../hooks/useDarkMode';
@@ -29,6 +29,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isDark, toggle } = useDarkMode();
   const [plan, setPlan] = useState<string>('Free');
   const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [allMeetingTitles, setAllMeetingTitles] = useState<string[]>([]);
+  const searchRef = useRef<HTMLDivElement>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
 
@@ -44,8 +48,42 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useEffect(() => {
     meetingService
       .listMeetings()
-      .then((data) => setMeetings(data))
-      .catch(() => setMeetings([]));
+      .then((data) => {
+        setMeetings(data);
+        const titles = data
+          .map(m => m.title)
+          .filter(Boolean) as string[];
+        setAllMeetingTitles(titles);
+      })
+      .catch(() => {
+        setMeetings([]);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    
+    const query = searchQuery.toLowerCase();
+    const filtered = allMeetingTitles
+      .filter(title => title.toLowerCase().includes(query))
+      .slice(0, 5);
+    
+    setSuggestions(filtered);
+    setShowSuggestions(filtered.length > 0);
+  }, [searchQuery, allMeetingTitles]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -150,7 +188,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="relative hidden md:block group">
+            <div ref={searchRef} className="relative hidden md:block group">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors text-[20px]">search</span>
               <input 
                 className="h-10 w-64 rounded-full bg-background-light dark:bg-background-dark border-none pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 placeholder:text-text-muted/70 text-text-main dark:text-white" 
@@ -162,9 +200,64 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   if (e.key === 'Enter' && searchQuery.trim()) {
                     navigate(`/meetings?search=${encodeURIComponent(searchQuery.trim())}`);
                     setSearchQuery('');
+                    setShowSuggestions(false);
+                  }
+                  if (e.key === 'Escape') {
+                    setShowSuggestions(false);
                   }
                 }}
+                onFocus={() => {
+                  if (suggestions.length > 0) setShowSuggestions(true);
+                }}
               />
+
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl border border-border-light dark:border-border-dark z-50 overflow-hidden">
+                  
+                  <div className="px-3 py-2 border-b border-border-light dark:border-border-dark">
+                    <span className="text-xs text-text-muted font-medium uppercase tracking-wider">
+                      Meetings
+                    </span>
+                  </div>
+                  
+                  {suggestions.map((title, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        navigate(`/meetings?search=${encodeURIComponent(title)}`);
+                        setSearchQuery('');
+                        setShowSuggestions(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-background-light dark:hover:bg-background-dark transition-colors text-left"
+                    >
+                      <span className="material-symbols-outlined text-text-muted text-[18px]">description</span>
+                      <span className="text-sm text-text-main dark:text-white">
+                        {title.split(new RegExp(`(${searchQuery})`, 'gi'))
+                          .map((part, i) => 
+                            part.toLowerCase() === searchQuery.toLowerCase() 
+                              ? <mark key={i} className="bg-primary/20 text-primary rounded px-0.5">{part}</mark>
+                              : part
+                          )
+                        }
+                      </span>
+                    </button>
+                  ))}
+                  
+                  <button
+                    onClick={() => {
+                      navigate(`/meetings?search=${encodeURIComponent(searchQuery)}`);
+                      setSearchQuery('');
+                      setShowSuggestions(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 border-t border-border-light dark:border-border-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors text-left"
+                  >
+                    <span className="material-symbols-outlined text-primary text-[18px]">search</span>
+                    <span className="text-sm text-primary font-medium">
+                      Search for "{searchQuery}"
+                    </span>
+                  </button>
+                </div>
+              )}
             </div>
             <div className="notification-bell relative">
               <button 
